@@ -1,4 +1,4 @@
-from turtle import forward
+# UNET ORIGINAL PAPER
 import torch
 import torch.nn as nn
 import torch.nn.functional as func
@@ -55,6 +55,8 @@ class UNet(nn.Module):
 
         self.up_conv4 = nn.ConvTranspose2d(in_channels=128, out_channels=64,kernel_size=2,stride=2)
         self.up_conv4_3x3 = double_up_conv(in_channel_size= 128, out_channel_size=64)
+        
+        self.output = nn.Conv2d(in_channels = 64, out_channels = 2, kernel_size=1) 
 
     def forward(self,image):
         #encoder
@@ -112,11 +114,15 @@ class UNet(nn.Module):
         print("layer20: ",layer20.shape)    
         layer21 = self.up_conv4_3x3(layer20)
         print("layer21: ",layer21.shape)  
+        
+        output_layer = self.output(layer21)
+        result = func.log_softmax(output_layer,1)
 
-        return layer21
+        return result
 
 model = UNet()
 
 aug_data = torch.rand(size=(1,1,572,572))
 
 output = model(aug_data) 
+print("output: ",output.shape)  
